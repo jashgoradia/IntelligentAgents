@@ -59,6 +59,8 @@ public class Agent30 extends AbstractNegotiationParty
             }
         }
         MINIMUM_TARGET = (utilitySpace.getUtility(getMaxUtilityBid()) + utilitySpace.getUtility(getMinUtilityBid()))/2;
+        System.out.printf("Minimum target: %f\n", MINIMUM_TARGET);
+        System.out.println("v1.3");
     }
 
     /**
@@ -75,8 +77,13 @@ public class Agent30 extends AbstractNegotiationParty
 
         double offerUtility = utilitySpace.getUtility(getMaxUtilityBid());
         double discountFactor = (1 - timeline.getTime());
-        double minimumUtilityThreshold = discountFactor * offerUtility;
+        //double minimumUtilityThreshold = Math.min(discountFactor * offerUtility + MINIMUM_TARGET, 1.0);
+        double minimumUtilityThreshold = interpolate(MINIMUM_TARGET, offerUtility, timeline.getTime());
         double theirOfferUtility = utilitySpace.getUtility(lastOffer) * discountFactor;
+
+        System.out.printf("==============\nTheir offer utility: %f\nOur Minimum Utility threshold:%f\n",
+                theirOfferUtility,
+                minimumUtilityThreshold);
         if (minimumUtilityThreshold < MINIMUM_TARGET) {
             System.err.printf("Minimum util is lower than target -> %f < %f\n", minimumUtilityThreshold, MINIMUM_TARGET);
         }
@@ -84,23 +91,37 @@ public class Agent30 extends AbstractNegotiationParty
         // Check for acceptance if we have received an offer
         if (lastOffer != null)
             if (timeline.getTime() >= 0.99)
-                if (getUtility(lastOffer) >= MINIMUM_TARGET)
+                if (getUtility(lastOffer) >= MINIMUM_TARGET) {
+                    System.out.println("Accept");
                     return new Accept(getPartyId(), lastOffer);
-                else
+                } else {
+                    System.out.println("End");
                     return new EndNegotiation(getPartyId());
+                }
 
         //First check the offer -> see if we can accept
-        if (theirOfferUtility > MINIMUM_TARGET) {
+        if (theirOfferUtility > minimumUtilityThreshold) {
+            System.out.println("Accept at good offer!");
             return new Accept(getPartyId(), lastOffer);
         }
         //IF above fails, THEN make new offer or end negotiation
         if (timeline.getTime() < 0.99){
-            return new Offer(getPartyId(), generateRandomBidAboveTarget(minimumUtilityThreshold));
+            Bid bid = generateRandomBidAboveTarget(minimumUtilityThreshold);
+            double bidUtility = utilitySpace.getUtility(bid);
+            System.out.println("Making an offer with utility: " + bidUtility);
+            if (bidUtility < MINIMUM_TARGET && theirOfferUtility > bidUtility) {
+                return new Accept(getPartyId(), lastOffer);
+            }
+            return new Offer(getPartyId(), bid);
         } else {
             return new EndNegotiation(getPartyId());
         }
         // Otherwise, send out a random offer above the target utility
 
+    }
+
+    private double interpolate(double minUtil, double maxUtil, double time) {
+        return (minUtil - maxUtil)*time + maxUtil;
     }
 
     private Bid getMaxUtilityBid() {
