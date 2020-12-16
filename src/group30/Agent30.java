@@ -24,7 +24,7 @@ import genius.core.utility.EvaluatorDiscrete;
  */
 public class Agent30 extends AbstractNegotiationParty
 {
-    private static double MINIMUM_TARGET = 0.8;
+    private double MINIMUM_TARGET = 0.8;
     private Bid lastOffer;
 
     /**
@@ -58,11 +58,16 @@ public class Agent30 extends AbstractNegotiationParty
                 }
             }
         }
+        MINIMUM_TARGET = (utilitySpace.getUtility(getMaxUtilityBid()) + utilitySpace.getUtility(getMinUtilityBid()))/2;
     }
 
     /**
      * Makes a random offer above the minimum utility target
      * Accepts everything above the reservation value at the very end of the negotiation; or breaks off otherwise.
+     * We can do one of three things:
+     *  -> Accept the opponent's offer
+     *  -> Generate a counter-offer
+     *  -> End the negotation
      */
     @Override
     public Action chooseAction(List<Class<? extends Action>> possibleActions)
@@ -74,9 +79,23 @@ public class Agent30 extends AbstractNegotiationParty
                     return new Accept(getPartyId(), lastOffer);
                 else
                     return new EndNegotiation(getPartyId());
+        double offerUtility = utilitySpace.getUtility(getMaxUtilityBid());
+        double discountFactor = (1 - timeline.getTime());
+        double minimumUtilityThreshold = discountFactor * offerUtility;
+        double theirOfferUtility = utilitySpace.getUtility(lastOffer) * discountFactor;
 
+        //First check the offer -> see if we can accept
+        if (theirOfferUtility > MINIMUM_TARGET) {
+            return new Accept(getPartyId(), lastOffer);
+        }
+        //IF above fails, THEN make new offer or end negotiation
+        if (offerUtility > minimumUtilityThreshold) {
+            return new Offer(getPartyId(), generateRandomBidAboveTarget(minimumUtilityThreshold));
+        } else {
+            return new EndNegotiation(getPartyId());
+        }
         // Otherwise, send out a random offer above the target utility
-        return new Offer(getPartyId(), generateRandomBidAboveTarget());
+
     }
 
     private Bid getMaxUtilityBid() {
@@ -88,7 +107,16 @@ public class Agent30 extends AbstractNegotiationParty
         return null;
     }
 
-    private Bid generateRandomBidAboveTarget()
+    private Bid getMinUtilityBid() {
+        try {
+            return utilitySpace.getMinUtilityBid();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Bid generateRandomBidAboveTarget(double target)
     {
         Bid randomBid;
         double util;
@@ -99,7 +127,7 @@ public class Agent30 extends AbstractNegotiationParty
             randomBid = generateRandomBid();
             util = utilitySpace.getUtility(randomBid);
         }
-        while (util < MINIMUM_TARGET && i++ < 100);
+        while (util < target && i++ < 100);
         return randomBid;
     }
 
