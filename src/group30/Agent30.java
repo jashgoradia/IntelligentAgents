@@ -72,24 +72,29 @@ public class Agent30 extends AbstractNegotiationParty
     @Override
     public Action chooseAction(List<Class<? extends Action>> possibleActions)
     {
-        // Check for acceptance if we have received an offer
-        if (lastOffer != null)
-            if (timeline.getTime() >= 0.99)
-                if (getUtility(lastOffer) >= utilitySpace.getReservationValue())
-                    return new Accept(getPartyId(), lastOffer);
-                else
-                    return new EndNegotiation(getPartyId());
+
         double offerUtility = utilitySpace.getUtility(getMaxUtilityBid());
         double discountFactor = (1 - timeline.getTime());
         double minimumUtilityThreshold = discountFactor * offerUtility;
         double theirOfferUtility = utilitySpace.getUtility(lastOffer) * discountFactor;
+        if (minimumUtilityThreshold < MINIMUM_TARGET) {
+            System.err.printf("Minimum util is lower than target -> %f < %f\n", minimumUtilityThreshold, MINIMUM_TARGET);
+        }
+
+        // Check for acceptance if we have received an offer
+        if (lastOffer != null)
+            if (timeline.getTime() >= 0.99)
+                if (getUtility(lastOffer) >= MINIMUM_TARGET)
+                    return new Accept(getPartyId(), lastOffer);
+                else
+                    return new EndNegotiation(getPartyId());
 
         //First check the offer -> see if we can accept
         if (theirOfferUtility > MINIMUM_TARGET) {
             return new Accept(getPartyId(), lastOffer);
         }
         //IF above fails, THEN make new offer or end negotiation
-        if (offerUtility > minimumUtilityThreshold) {
+        if (timeline.getTime() < 0.99){
             return new Offer(getPartyId(), generateRandomBidAboveTarget(minimumUtilityThreshold));
         } else {
             return new EndNegotiation(getPartyId());
