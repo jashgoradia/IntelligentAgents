@@ -88,6 +88,11 @@ public class Agent30 extends AbstractNegotiationParty {
      */
     @Override
     public Action chooseAction(List<Class<? extends Action>> possibleActions) {
+        if (lastOffer == null){
+            Bid initialBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
+            System.out.println("First Bid: Our utility = " + utilitySpace.getUtility(initialBid));
+            return new Offer(getPartyId(), initialBid);
+        }
 
         double offerUtility = utilitySpace.getUtility(getMaxUtilityBid());
 //        double discountFactor = (1 - timeline.getTime());
