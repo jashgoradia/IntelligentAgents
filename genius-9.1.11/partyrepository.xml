@@ -387,6 +387,9 @@
             <partyRepItem classPath="/Users/jashgoradia/Documents/Github.nosync/Lab2/out/production/Lab2/group30/MyAgent.class" strategyParameters="">
                 <properties/>
             </partyRepItem>
+            <partyRepItem classPath="/Users/jashgoradia/Documents/Github.nosync/Lab2/out/production/Lab2/group30/Agent30.class" strategyParameters="">
+                <properties/>
+            </partyRepItem>
         </partyRepItems>
         <domainRepItem/>
         <protocolRepItem/>
