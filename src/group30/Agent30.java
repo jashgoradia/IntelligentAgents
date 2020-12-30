@@ -32,6 +32,7 @@ public class Agent30 extends AbstractNegotiationParty {
     private Map<Integer, Map<String, Double>> opponentValues;
     private Map<String, Integer> optionCounts;
     private List<Issue> issues;
+    private List<Bid> bids;
     private int bidCount = 0;
     private double sumOfUnnormalizedWeightOfIssues;
 
@@ -41,6 +42,7 @@ public class Agent30 extends AbstractNegotiationParty {
     @Override
     public void init(NegotiationInfo info) {
         super.init(info);
+
 
         AbstractUtilitySpace utilitySpace = info.getUtilitySpace();
         AdditiveUtilitySpace additiveUtilitySpace = (AdditiveUtilitySpace) utilitySpace;
@@ -53,6 +55,7 @@ public class Agent30 extends AbstractNegotiationParty {
             optionCounts.put(discrete.getName(), discrete.getNumberOfValues());
         }
 
+        this.bids = new ArrayList<>();
         this.opponentBids = new TreeMap<>();
 
         for (Issue issue : issues) {
@@ -91,13 +94,14 @@ public class Agent30 extends AbstractNegotiationParty {
         if (lastOffer == null){
             Bid initialBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
             System.out.println("First Bid: Our utility = " + utilitySpace.getUtility(initialBid));
+            bids.add(initialBid);
             return new Offer(getPartyId(), initialBid);
         }
 
         double offerUtility = utilitySpace.getUtility(getMaxUtilityBid());
 //        double discountFactor = (1 - timeline.getTime());
         //double minimumUtilityThreshold = Math.min(discountFactor * offerUtility + MINIMUM_TARGET, 1.0);
-        double minimumUtilityThreshold = MINIMUM_TARGET;//interpolate(MINIMUM_TARGET, offerUtility, timeline.getTime());
+        double minimumUtilityThreshold = computeNashBargainingSolution();//MINIMUM_TARGET;//interpolate(MINIMUM_TARGET, offerUtility, timeline.getTime());
         double theirOfferUtility = utilitySpace.getUtility(lastOffer);
         double opponentUtlity = predictOpponentUtility(lastOffer);
         System.out.println("The predicted opponent utility is: "+ opponentUtlity);
@@ -107,10 +111,10 @@ public class Agent30 extends AbstractNegotiationParty {
         if (lastOffer != null)
             if (timeline.getTime() >= 0.99)
                 if (getUtility(lastOffer) >= MINIMUM_TARGET) {
-                    System.out.println("Accept");
+                    System.err.println("Accept");
                     return new Accept(getPartyId(), lastOffer);
                 } else {
-                    System.out.println("End");
+                    System.err.println("End in first part duplicated");
                     return new EndNegotiation(getPartyId());
                 }
 
@@ -133,8 +137,10 @@ public class Agent30 extends AbstractNegotiationParty {
 //            if (bidUtility < MINIMUM_TARGET && theirOfferUtility > bidUtility) {
 //                return new Accept(getPartyId(), lastOffer);
 //            }
+            bids.add(bid);
             return new Offer(getPartyId(), bid);
         } else {
+            System.err.println("End in second part duplicated");
             return new EndNegotiation(getPartyId());
         }
         // Otherwise, send out a random offer above the target utility
@@ -161,6 +167,25 @@ public class Agent30 extends AbstractNegotiationParty {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private double computeNashBargainingSolution() {
+        double highestNashPoint = MINIMUM_TARGET;
+        Bid highestNashBid = null;
+        for (Bid bid : bids) {
+            double ourOutcome = utilitySpace.getUtility(bid);
+            double theirOutcome = predictOpponentUtility(bid);
+            //TODO this is what we play with
+            double nashPoint = ourOutcome * theirOutcome;
+
+            if (nashPoint > highestNashPoint) {
+                highestNashPoint = nashPoint;
+                highestNashBid = bid;
+            }
+        }
+
+        return highestNashPoint;
+
     }
 
     private Bid generateRandomBidAboveTarget(double target) {
