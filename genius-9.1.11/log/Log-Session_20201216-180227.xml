@@ -1,0 +1,7 @@
+<?xml version="1.0" ?><Session>
+<NegotiationOutcome currentTime="Wed Dec 16 18:02:27 GMT 2020" timeOfAgreement="0.7868852459016393" lastAction="(Accept  bid:Bid[Laptop: Macintosh, Harddisk: 80 Gb, External Monitor: 19'' LCD])" domain="etc/templates/anac/y2011/Laptop/laptop_domain.xml" bids="95" runtime="0.183243388" finalOutcome="Bid[Laptop: Macintosh, Harddisk: 80 Gb, External Monitor: 19'' LCD]" startingAgent="BoulwareNegotiationParty@2" deadline="60rounds">
+<resultsOfAgent agent="BoulwareNegotiationParty@2" agentDesc="Time-based agent" utilspace="etc/templates/anac/y2011/Laptop/laptop_buyer_utility.xml" agentClass="negotiator.parties.BoulwareNegotiationParty" finalUtility="0.725620106089855" discountedUtility="0.3696745907964703" discount="0.42441038">
+</resultsOfAgent>
+<resultsOfAgent agent="BoulwareNegotiationParty@3" agentDesc="Time-based agent" utilspace="etc/templates/anac/y2011/Laptop/laptop_seller_utility_u10.xml" agentClass="negotiator.parties.BoulwareNegotiationParty" finalUtility="1.0" discountedUtility="0.5094602364156275" discount="0.42441038">
+</resultsOfAgent>
+</NegotiationOutcome></Session>

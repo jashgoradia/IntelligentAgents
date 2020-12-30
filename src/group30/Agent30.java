@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import genius.core.AgentID;
 import genius.core.Bid;
-import genius.core.Domain;
 import genius.core.actions.Accept;
 import genius.core.actions.Action;
 import genius.core.actions.EndNegotiation;
@@ -18,7 +17,6 @@ import genius.core.parties.NegotiationInfo;
 import genius.core.utility.AbstractUtilitySpace;
 import genius.core.utility.AdditiveUtilitySpace;
 import genius.core.utility.EvaluatorDiscrete;
-import genius.core.issue.ValueInteger;
 
 /**
  * A simple example agent that makes random bids above a minimum target utility.
@@ -35,6 +33,7 @@ public class Agent30 extends AbstractNegotiationParty {
     private List<Bid> bids;
     private int bidCount = 0;
     private double sumOfUnnormalizedWeightOfIssues;
+    private Map<Bid, Double> opponentsOffers;
 
     /**
      * Initializes a new instance of the agent.
@@ -57,6 +56,7 @@ public class Agent30 extends AbstractNegotiationParty {
 
         this.bids = new ArrayList<>();
         this.opponentBids = new TreeMap<>();
+        this.opponentsOffers = new HashMap<>();
 
         for (Issue issue : issues) {
             int issueNumber = issue.getNumber();
@@ -91,6 +91,7 @@ public class Agent30 extends AbstractNegotiationParty {
      */
     @Override
     public Action chooseAction(List<Class<? extends Action>> possibleActions) {
+        System.out.println(bidCount);
         if (lastOffer == null){
             Bid initialBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
             System.out.println("First Bid: Our utility = " + utilitySpace.getUtility(initialBid));
@@ -106,17 +107,51 @@ public class Agent30 extends AbstractNegotiationParty {
         double opponentUtlity = predictOpponentUtility(lastOffer);
         System.out.println("The predicted opponent utility is: "+ opponentUtlity);
         System.out.printf("==============\nTheir offer utility: %f\nOur min util: %f\n",theirOfferUtility, minimumUtilityThreshold);
+        opponentsOffers.put(lastOffer,utilitySpace.getUtility(lastOffer));
 
         // Check for acceptance if we have received an offer
-        if (lastOffer != null)
-            if (timeline.getTime() >= 0.99)
-                if (getUtility(lastOffer) >= MINIMUM_TARGET) {
-                    System.err.println("Accept");
-                    return new Accept(getPartyId(), lastOffer);
-                } else {
-                    System.err.println("End in first part duplicated");
-                    return new EndNegotiation(getPartyId());
+//        if (lastOffer != null)
+        // TODO If we get past a certain number of rounds, look for bids we have made where our utility was higher than minimum_target and their predicted utility is highest
+        if (timeline.getTime() >= 0.97) {
+            if (theirOfferUtility > minimumUtilityThreshold) {
+                System.out.println("Accept at good offer!");
+                return new Accept(getPartyId(), lastOffer);
+            }
+            double maxOpponentUtility = 0.0;
+            Bid bidToMake = null;
+            for (Bid bid : bids){
+                if (utilitySpace.getUtility(bid) >= MINIMUM_TARGET){
+                    if (predictOpponentUtility(bid)>maxOpponentUtility){
+                        bidToMake = bid;
+                    }
                 }
+            }
+            return new Offer(getPartyId(), bidToMake);
+        }
+        else if (timeline.getTime() >= 0.99) {
+            if (getUtility(lastOffer) >= MINIMUM_TARGET) {
+                System.err.println("Accept");
+                return new Accept(getPartyId(), lastOffer);
+            } else {
+                // Towards the last few rounds, bid something they have offered where our utility is the highest
+                Bid hightestOpponentUtilityBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
+                double maxUtilInMap = (Collections.max(opponentsOffers.values()));
+                if (maxUtilInMap < MINIMUM_TARGET) {
+                    for (Map.Entry<Bid, Double> entry : opponentsOffers.entrySet()) {
+                        if (entry.getValue() == maxUtilInMap) {
+                            hightestOpponentUtilityBid = entry.getKey();
+                        }
+                    }
+                    System.out.println("Couldn't find an offer with utility > target \n Utility of our bid: " + utilitySpace.getUtility(hightestOpponentUtilityBid));
+                    opponentsOffers.remove(hightestOpponentUtilityBid);
+                    return new Offer(getPartyId(), hightestOpponentUtilityBid);
+                }
+            }
+//            else {
+//                System.err.println("End in first part duplicated");
+//                return new EndNegotiation(getPartyId());
+//            }
+        }
 
         //First check the offer -> see if we can accept
         if (theirOfferUtility > minimumUtilityThreshold) {
@@ -189,6 +224,7 @@ public class Agent30 extends AbstractNegotiationParty {
     }
 
     private Bid generateRandomBidAboveTarget(double target) {
+        Map<Bid,Double>randomBids = new HashMap<>();
         Bid randomBid;
         double util;
         int i = 0;
@@ -196,8 +232,20 @@ public class Agent30 extends AbstractNegotiationParty {
         do {
             randomBid = generateRandomBid();
             util = utilitySpace.getUtility(randomBid);
+            randomBids.put(randomBid,util);
         }
         while (util < target && i++ < 100);
+        if (util<target) {
+            System.out.println("Random util was: " + utilitySpace.getUtility(randomBid));
+            double maxUtilInMap = (Collections.max(randomBids.values()));
+            for (Map.Entry<Bid, Double> entry : randomBids.entrySet()) {
+                if (entry.getValue() == maxUtilInMap) {
+                    randomBid = entry.getKey();
+                }
+            }
+            System.out.println("Tried finding the bid with highest util, new util: " + utilitySpace.getUtility(randomBid));
+            return randomBid;
+        }
         return randomBid;
     }
 
