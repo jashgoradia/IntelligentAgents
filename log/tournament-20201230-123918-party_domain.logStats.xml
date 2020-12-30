@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<agentsStatistics>
+    <statistics>
+        <agentname>agents.anac.y2017.agentf.AgentF</agentname>
+        <totalUndiscountedUtility>2.9589381440933025</totalUndiscountedUtility>
+        <totalDiscountedUtility>2.9589381440933025</totalDiscountedUtility>
+        <numberOfSessions>4</numberOfSessions>
+        <totalNashDist>0.8569109820684873</totalNashDist>
+        <totalWelfare>5.848391209500827</totalWelfare>
+        <totalParetoDistance>0.5532521172285032</totalParetoDistance>
+        <meanDiscounted>0.7397345360233256</meanDiscounted>
+        <meanNashDistance>0.21422774551712181</meanNashDistance>
+        <meanParetoDistance>0.1383130293071258</meanParetoDistance>
+        <meanUndiscounted>0.7397345360233256</meanUndiscounted>
+        <meanWelfare>1.4620978023752067</meanWelfare>
+    </statistics>
+    <statistics>
+        <agentname>group30.Agent30</agentname>
+        <totalUndiscountedUtility>2.7716710193489202</totalUndiscountedUtility>
+        <totalDiscountedUtility>2.7716710193489202</totalDiscountedUtility>
+        <numberOfSessions>4</numberOfSessions>
+        <totalNashDist>0.9900000607799613</totalNashDist>
+        <totalWelfare>5.612827117383618</totalWelfare>
+        <totalParetoDistance>0.6949040828079109</totalParetoDistance>
+        <meanDiscounted>0.6929177548372301</meanDiscounted>
+        <meanNashDistance>0.24750001519499032</meanNashDistance>
+        <meanParetoDistance>0.17372602070197773</meanParetoDistance>
+        <meanUndiscounted>0.6929177548372301</meanUndiscounted>
+        <meanWelfare>1.4032067793459044</meanWelfare>
+    </statistics>
+</agentsStatistics>

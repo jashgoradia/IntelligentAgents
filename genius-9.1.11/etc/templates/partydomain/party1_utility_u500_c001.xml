@@ -59,17 +59,17 @@ highest cost." value="Catering">
 <item evaluation="1.0" index="4" description="Hire somebody else to do your dirty work. No work,but pricey." value="Hired Help"> 
 </item> 
 </issue> 
-<weight index="1" value="0.1891632361446104"> 
+<weight index="1" value="0.18931030627011267"> 
 </weight> 
-<weight index="2" value="0.2803534916150187"> 
+<weight index="2" value="0.2803496837631328"> 
 </weight> 
-<weight index="3" value="0.1902101345900501"> 
+<weight index="3" value="0.19017508348082657"> 
 </weight> 
-<weight index="4" value="0.05006971718407743"> 
+<weight index="4" value="0.05004895214298744"> 
 </weight> 
-<weight index="5" value="0.19014618901219388"> 
+<weight index="5" value="0.19009350237912837"> 
 </weight> 
-<weight index="6" value="0.10005723145404952"> 
+<weight index="6" value="0.10002247196381223"> 
 </weight> 
 </objective> 
 <discount_factor value="1.0"> 
@@ -77,13 +77,13 @@ highest cost." value="Catering">
 <reservation value="0.0"> 
 </reservation> 
 <comparisons> 
-150 
+500
 </comparisons> 
 <errors> 
 0 
 </errors> 
 <elicitation_cost> 
-0.0 
+0.001 
 </elicitation_cost> 
 <fixed_seed> 
 true 

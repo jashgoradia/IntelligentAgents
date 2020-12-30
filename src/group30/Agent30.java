@@ -78,7 +78,7 @@ public class Agent30 extends AbstractNegotiationParty {
         }
 //        MINIMUM_TARGET = (utilitySpace.getUtility(getMaxUtilityBid()) + utilitySpace.getUtility(getMinUtilityBid())) / 2;
 //        System.out.printf("Minimum target: %f\n", MINIMUM_TARGET);
-        System.out.println("v1.3");
+        System.out.println("v1.4");
     }
 
     /**
@@ -127,9 +127,9 @@ public class Agent30 extends AbstractNegotiationParty {
         if (timeline.getTime() < 0.99) {
             //Bid bid = generateRandomBidAboveTarget(minimumUtilityThreshold);
             List<Bid> randomBids = generateRandomBidsAboveTarget(10, minimumUtilityThreshold);
-            for (Bid bid: randomBids) {
-                System.out.println(bid.getValues());
-            }
+//            for (Bid bid: randomBids) {
+//                System.out.println(bid.getValues());
+//            }
             randomBids = sortBidsPerOpponentModel(randomBids);
             Bid bid = randomBids.get(0);
             double bidUtility = utilitySpace.getUtility(bid);
@@ -232,7 +232,7 @@ public class Agent30 extends AbstractNegotiationParty {
             opponentBids.put(issueNumber, currentIssueCounts);
         }
         sumOfUnnormalizedWeightOfIssues = computeSumOfUnnormalizedWeightOfIssues();
-        displayOpponentCounts();
+        //displayOpponentCounts();
     }
 
     private int getOptionRank(Map<String, Integer> optionsForIssue, Bid opponentBid, int issueNumber) {

@@ -1,0 +1,25 @@
+<?xml version="1.0" ?><Tournament>
+<NegotiationOutcome currentTime="Wed Dec 30 12:39:19 CET 2020" timeOfAgreement="0.9303482587064676" lastAction="(Accept  bid:Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Printed, Music: DJ, Cleanup: Specialized Materials])" domain="etc/templates/partydomain/party_domain.xml" bids="372" runtime="0.2214625" finalOutcome="Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Printed, Music: DJ, Cleanup: Specialized Materials]" startingAgent="AgentF@0" deadline="200rounds">
+<resultsOfAgent agent="AgentF@0" agentDesc="ANAC2017" utilspace="etc/templates/partydomain/party1_utility_u10.xml" agentClass="agents.anac.y2017.agentf.AgentF" finalUtility="0.7553322898382127" discountedUtility="0.7553322898382127" discount="1.0">
+</resultsOfAgent>
+<resultsOfAgent agent="AgentF@1" agentDesc="ANAC2017" utilspace="etc/templates/partydomain/party2_utility_u50.xml" agentClass="agents.anac.y2017.agentf.AgentF" finalUtility="0.7563872520655046" discountedUtility="0.7563872520655046" discount="1.0">
+</resultsOfAgent>
+</NegotiationOutcome>
+<NegotiationOutcome currentTime="Wed Dec 30 12:39:21 CET 2020" timeOfAgreement="0.8407960199004975" lastAction="(Accept  bid:Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Handmade, Music: DJ, Cleanup: Water and Soap])" domain="etc/templates/partydomain/party_domain.xml" bids="337" runtime="1.00208" finalOutcome="Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Handmade, Music: DJ, Cleanup: Water and Soap]" startingAgent="Agent30@2" deadline="200rounds">
+<resultsOfAgent agent="Agent30@2" agentDesc="Practice Submission" utilspace="etc/templates/partydomain/party1_utility_u10.xml" agentClass="group30.Agent30" finalUtility="0.747017018126169" discountedUtility="0.747017018126169" discount="1.0">
+</resultsOfAgent>
+<resultsOfAgent agent="AgentF@3" agentDesc="ANAC2017" utilspace="etc/templates/partydomain/party2_utility_u50.xml" agentClass="agents.anac.y2017.agentf.AgentF" finalUtility="0.7302269532469835" discountedUtility="0.7302269532469835" discount="1.0">
+</resultsOfAgent>
+</NegotiationOutcome>
+<NegotiationOutcome currentTime="Wed Dec 30 12:39:22 CET 2020" timeOfAgreement="0.8407960199004975" lastAction="(Accept  bid:Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Handmade, Music: MP3, Cleanup: Specialized Materials])" domain="etc/templates/partydomain/party_domain.xml" bids="336" runtime="1.0985659" finalOutcome="Bid[Food: Catering, Drinks: Handmade Cocktails, Location: Party Room, Invitations: Custom, Handmade, Music: MP3, Cleanup: Specialized Materials]" startingAgent="AgentF@4" deadline="200rounds">
+<resultsOfAgent agent="AgentF@4" agentDesc="ANAC2017" utilspace="etc/templates/partydomain/party1_utility_u10.xml" agentClass="agents.anac.y2017.agentf.AgentF" finalUtility="0.7169916489426014" discountedUtility="0.7169916489426014" discount="1.0">
+</resultsOfAgent>
+<resultsOfAgent agent="Agent30@5" agentDesc="Practice Submission" utilspace="etc/templates/partydomain/party2_utility_u50.xml" agentClass="group30.Agent30" finalUtility="0.6307165053776382" discountedUtility="0.6307165053776382" discount="1.0">
+</resultsOfAgent>
+</NegotiationOutcome>
+<NegotiationOutcome currentTime="Wed Dec 30 12:39:23 CET 2020" timeOfAgreement="0.07462686567164178" lastAction="(Accept  bid:Bid[Food: Catering, Drinks: Non-Alcoholic, Location: Party Room, Invitations: Custom, Printed, Music: MP3, Cleanup: Water and Soap])" domain="etc/templates/partydomain/party_domain.xml" bids="29" runtime="0.1791614" finalOutcome="Bid[Food: Catering, Drinks: Non-Alcoholic, Location: Party Room, Invitations: Custom, Printed, Music: MP3, Cleanup: Water and Soap]" startingAgent="Agent30@6" deadline="200rounds">
+<resultsOfAgent agent="Agent30@6" agentDesc="Practice Submission" utilspace="etc/templates/partydomain/party1_utility_u10.xml" agentClass="group30.Agent30" finalUtility="0.5651729270205428" discountedUtility="0.5651729270205428" discount="1.0">
+</resultsOfAgent>
+<resultsOfAgent agent="Agent30@7" agentDesc="Practice Submission" utilspace="etc/templates/partydomain/party2_utility_u50.xml" agentClass="group30.Agent30" finalUtility="0.82876456882457" discountedUtility="0.82876456882457" discount="1.0">
+</resultsOfAgent>
+</NegotiationOutcome></Tournament>
