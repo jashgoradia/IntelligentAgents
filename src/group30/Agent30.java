@@ -1,18 +1,7 @@
 package group30;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.stream.Collectors;
-
 import genius.core.AgentID;
 import genius.core.Bid;
-import genius.core.Domain;
 import genius.core.actions.Accept;
 import genius.core.actions.Action;
 import genius.core.actions.EndNegotiation;
@@ -22,11 +11,16 @@ import genius.core.issue.IssueDiscrete;
 import genius.core.issue.ValueDiscrete;
 import genius.core.parties.AbstractNegotiationParty;
 import genius.core.parties.NegotiationInfo;
-import genius.core.uncertainty.*;
+import genius.core.uncertainty.AdditiveUtilitySpaceFactory;
+import genius.core.uncertainty.BidRanking;
 import genius.core.utility.AbstractUtilitySpace;
 import genius.core.utility.AdditiveUtilitySpace;
 import genius.core.utility.EvaluatorDiscrete;
+
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * A simple example agent that makes random bids above a minimum target utility.
@@ -110,8 +104,6 @@ public class Agent30 extends AbstractNegotiationParty {
             IssueDiscrete discrete = (IssueDiscrete) issue;
             optionCounts.put(discrete.getName(), discrete.getNumberOfValues());
         }
-
-
 
 
         this.bids = new ArrayList<>();

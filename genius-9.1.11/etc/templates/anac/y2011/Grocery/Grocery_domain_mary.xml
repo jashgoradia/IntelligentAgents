@@ -1,4 +1,4 @@
-<utility_space> 
+<utility_space type="UNCERTAIN">
     <reservation value="0" />
 <objective index="0" description="" name="GroceryDomain" type="objective" etype="objective"> 
 <issue index="1" name="Bread type" vtype="discrete" type="discrete" etype="discrete"> 
