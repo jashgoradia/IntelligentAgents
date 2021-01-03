@@ -24,6 +24,8 @@
 				<profile url="file:etc/templates/partydomain/party2_utility_u50.xml"/>
 				<profile url="file:etc/templates/partydomain/party1_utility_u1000_c001.xml" />
 				<profile url="file:etc/templates/partydomain/party2_utility_u1000_c001.xml" />
+                <profile url="file:etc/templates/partydomain/party1_utility_u500_c001.xml" />
+                <profile url="file:etc/templates/partydomain/party2_utility_u500_c001.xml" />
             </domainRepItem>
 		    <domainRepItem url="file:etc/templates/anac/y2011/Laptop/laptop_domain.xml">
                 <profile url="file:etc/templates/anac/y2011/Laptop/laptop_buyer_utility.xml"/>

@@ -1,10 +1,18 @@
 package group30;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
 import genius.core.AgentID;
 import genius.core.Bid;
+import genius.core.Domain;
 import genius.core.actions.Accept;
 import genius.core.actions.Action;
 import genius.core.actions.EndNegotiation;
@@ -14,9 +22,11 @@ import genius.core.issue.IssueDiscrete;
 import genius.core.issue.ValueDiscrete;
 import genius.core.parties.AbstractNegotiationParty;
 import genius.core.parties.NegotiationInfo;
+import genius.core.uncertainty.*;
 import genius.core.utility.AbstractUtilitySpace;
 import genius.core.utility.AdditiveUtilitySpace;
 import genius.core.utility.EvaluatorDiscrete;
+import java.util.logging.Logger;
 
 /**
  * A simple example agent that makes random bids above a minimum target utility.
@@ -28,12 +38,16 @@ public class Agent30 extends AbstractNegotiationParty {
     private Bid lastOffer;
     private Map<Integer, Map<String, Integer>> opponentBids;
     private Map<Integer, Map<String, Double>> opponentValues;
+
     private Map<String, Integer> optionCounts;
     private List<Issue> issues;
     private List<Bid> bids;
+    private Set<Bid> desperateBids;
     private int bidCount = 0;
     private double sumOfUnnormalizedWeightOfIssues;
     private Map<Bid, Double> opponentsOffers;
+
+    private static final boolean VERBOSE = false;
 
     /**
      * Initializes a new instance of the agent.
@@ -42,8 +56,51 @@ public class Agent30 extends AbstractNegotiationParty {
     public void init(NegotiationInfo info) {
         super.init(info);
 
+//        File file = new File("myLogs.txt");
+//        BufferedWriter br = null;
+//        try {
+//            br = new BufferedWriter(new FileWriter(file));
+//        } catch (IOException e) {
+//            System.exit(-1);
+//        }
+//
+//        BufferedWriter finalBr = br;
+//        Logger.getLogger("tournamentRun").addHandler(new Handler() {
+//            @Override
+//            public void publish(LogRecord record) {
+//                try {
+//                    finalBr.write(record.getMessage());
+//                    finalBr.flush();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            @Override
+//            public void flush() {
+//                try {
+//                    finalBr.flush();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            @Override
+//            public void close() throws SecurityException {
+//                try {
+//                    finalBr.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
-        AbstractUtilitySpace utilitySpace = info.getUtilitySpace();
+        if (hasPreferenceUncertainty()) {
+            System.out.println("Preference uncertainty is enabled.");
+        }
+
+
+
         AdditiveUtilitySpace additiveUtilitySpace = (AdditiveUtilitySpace) utilitySpace;
 
         this.issues = additiveUtilitySpace.getDomain().getIssues();
@@ -54,7 +111,11 @@ public class Agent30 extends AbstractNegotiationParty {
             optionCounts.put(discrete.getName(), discrete.getNumberOfValues());
         }
 
+
+
+
         this.bids = new ArrayList<>();
+        this.desperateBids = new HashSet<>();
         this.opponentBids = new TreeMap<>();
         this.opponentsOffers = new HashMap<>();
 
@@ -78,7 +139,7 @@ public class Agent30 extends AbstractNegotiationParty {
         }
 //        MINIMUM_TARGET = (utilitySpace.getUtility(getMaxUtilityBid()) + utilitySpace.getUtility(getMinUtilityBid())) / 2;
 //        System.out.printf("Minimum target: %f\n", MINIMUM_TARGET);
-        System.out.println("v1.4");
+        System.out.println("v1.6");
     }
 
     /**
@@ -91,11 +152,11 @@ public class Agent30 extends AbstractNegotiationParty {
      */
     @Override
     public Action chooseAction(List<Class<? extends Action>> possibleActions) {
-        System.out.println(bidCount);
         if (lastOffer == null){
             Bid initialBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
             System.out.println("First Bid: Our utility = " + utilitySpace.getUtility(initialBid));
             bids.add(initialBid);
+            Logger.getLogger("tournamentRun").log(Level.INFO, initialBid.toString() + " -> " + utilitySpace.getUtility(initialBid));
             return new Offer(getPartyId(), initialBid);
         }
 
@@ -105,14 +166,16 @@ public class Agent30 extends AbstractNegotiationParty {
         double minimumUtilityThreshold = computeNashBargainingSolution();//MINIMUM_TARGET;//interpolate(MINIMUM_TARGET, offerUtility, timeline.getTime());
         double theirOfferUtility = utilitySpace.getUtility(lastOffer);
         double opponentUtlity = predictOpponentUtility(lastOffer);
-        System.out.println("The predicted opponent utility is: "+ opponentUtlity);
-        System.out.printf("==============\nTheir offer utility: %f\nOur min util: %f\n",theirOfferUtility, minimumUtilityThreshold);
+        if (VERBOSE) {
+            System.out.println("The predicted opponent utility is: "+ opponentUtlity);
+            System.out.printf("==============\nTheir offer utility: %f\nOur min util: %f\n",theirOfferUtility, minimumUtilityThreshold);
+        }
         opponentsOffers.put(lastOffer,utilitySpace.getUtility(lastOffer));
-
+        System.out.println(timeline.getTime());
         // Check for acceptance if we have received an offer
 //        if (lastOffer != null)
         // TODO If we get past a certain number of rounds, look for bids we have made where our utility was higher than minimum_target and their predicted utility is highest
-        if (timeline.getTime() >= 0.97) {
+        if (timeline.getTime() >= 0.95 && timeline.getTime() < 0.97) {
             if (theirOfferUtility > minimumUtilityThreshold) {
                 System.out.println("Accept at good offer!");
                 return new Accept(getPartyId(), lastOffer);
@@ -121,37 +184,85 @@ public class Agent30 extends AbstractNegotiationParty {
             Bid bidToMake = null;
             for (Bid bid : bids){
                 if (utilitySpace.getUtility(bid) >= MINIMUM_TARGET){
-                    if (predictOpponentUtility(bid)>maxOpponentUtility){
+                    double opponentUtility = predictOpponentUtility(bid);
+                    if (opponentUtility  > maxOpponentUtility){
                         bidToMake = bid;
+                        maxOpponentUtility = opponentUtility;
                     }
                 }
             }
+            Logger.getLogger("tournamentRun").log(Level.INFO, bidToMake.toString() + " -> " + utilitySpace.getUtility(bidToMake));
             return new Offer(getPartyId(), bidToMake);
         }
-        else if (timeline.getTime() >= 0.99) {
-            if (getUtility(lastOffer) >= MINIMUM_TARGET) {
-                System.err.println("Accept");
+        else if (timeline.getTime() >= 0.97 && timeline.getTime() < 0.995) {
+            if (getUtility(lastOffer) >= MINIMUM_TARGET * 0.9) {
+                System.err.println("Accept at final time");
                 return new Accept(getPartyId(), lastOffer);
             } else {
                 // Towards the last few rounds, bid something they have offered where our utility is the highest
-                Bid hightestOpponentUtilityBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
-                double maxUtilInMap = (Collections.max(opponentsOffers.values()));
-                if (maxUtilInMap < MINIMUM_TARGET) {
-                    for (Map.Entry<Bid, Double> entry : opponentsOffers.entrySet()) {
-                        if (entry.getValue() == maxUtilInMap) {
-                            hightestOpponentUtilityBid = entry.getKey();
-                        }
-                    }
-                    System.out.println("Couldn't find an offer with utility > target \n Utility of our bid: " + utilitySpace.getUtility(hightestOpponentUtilityBid));
-                    opponentsOffers.remove(hightestOpponentUtilityBid);
-                    return new Offer(getPartyId(), hightestOpponentUtilityBid);
+
+                //LOGIC 1
+                Map<Bid, Double> offerSums = new HashMap<>();
+                for (Bid bid : opponentsOffers.keySet()) {
+                    offerSums.put(bid, Math.min(opponentsOffers.get(bid), predictOpponentUtility(bid)));
                 }
-            }
+                for (Bid bid : bids) {
+                    offerSums.put(bid, Math.min(utilitySpace.getUtility(bid), predictOpponentUtility(bid)));
+                }
+
+                Bid highestMinBid = null;
+                double highestMinUtil = 0.0;
+
+                for (Bid bid : offerSums.keySet()) {
+                    double combinedUtil = offerSums.get(bid);
+                    if (combinedUtil > highestMinUtil && !desperateBids.contains(bid)) {
+                        highestMinBid = bid;
+                        highestMinUtil = combinedUtil;
+                    }
+                }
+                if (highestMinBid == null)
+                    System.err.println("oups");
+                this.desperateBids.add(highestMinBid);
+                printBid(highestMinBid);
+                printBid(lastOffer);
+                System.out.println("Return highest seen combined bid");
+                Logger.getLogger("tournamentRun").log(Level.INFO, highestMinBid.toString() + " -> " + utilitySpace.getUtility(highestMinBid));
+                return new Offer(getPartyId(), highestMinBid);
+
+                //LOGIC 2
+//                Bid hightestOpponentUtilityBid = generateRandomBidAboveTarget(MINIMUM_TARGET);
+//                double maxUtilInMap = (Collections.max(opponentsOffers.values()));
+//                if (maxUtilInMap < MINIMUM_TARGET) {
+//                    for (Map.Entry<Bid, Double> entry : opponentsOffers.entrySet()) {
+//                        if (entry.getValue() == maxUtilInMap) {
+//                            hightestOpponentUtilityBid = entry.getKey();
+//                        }
+//                    }
+//                    System.out.println("Couldn't find an offer with utility > target \n Utility of our bid: " + utilitySpace.getUtility(hightestOpponentUtilityBid));
+//                    opponentsOffers.remove(hightestOpponentUtilityBid);
+//                    return new Offer(getPartyId(), hightestOpponentUtilityBid);
+//                } else {
+//                    System.out.println("Seen offer than we should have accepted earlier");
+//                }
+
 //            else {
 //                System.err.println("End in first part duplicated");
 //                return new EndNegotiation(getPartyId());
 //            }
+            }
+        } else if (timeline.getTime() >= 0.995) {
+            System.out.print("Final round: ");
+            if (getUtility(lastOffer) >= utilitySpace.getReservationValue()) {
+                System.out.println("accept");
+                return new Accept(getPartyId(), lastOffer);
+            } else {
+                System.out.println("reject");
+                return new EndNegotiation(getPartyId());
+            }
+
         }
+
+
 
         //First check the offer -> see if we can accept
         if (theirOfferUtility > minimumUtilityThreshold) {
@@ -162,13 +273,17 @@ public class Agent30 extends AbstractNegotiationParty {
         if (timeline.getTime() < 0.99) {
             //Bid bid = generateRandomBidAboveTarget(minimumUtilityThreshold);
             List<Bid> randomBids = generateRandomBidsAboveTarget(10, minimumUtilityThreshold);
-//            for (Bid bid: randomBids) {
-//                System.out.println(bid.getValues());
-//            }
             randomBids = sortBidsPerOpponentModel(randomBids);
             Bid bid = randomBids.get(0);
+
+            //Elicit the user (possibly)
+            System.out.println(user.getElicitationCost() + " / " + user.getTotalBother());
+            if (false && user.getElicitationCost() < 0.01 && user.getTotalBother() < 0.15) {
+                userModel = user.elicitRank(bid, userModel);
+                estimateUtilitySpace();
+            }
             double bidUtility = utilitySpace.getUtility(bid);
-            System.out.println("Making an offer with utility: " + bidUtility);
+            //System.out.println("Making an offer with utility: " + bidUtility);
 //            if (bidUtility < MINIMUM_TARGET && theirOfferUtility > bidUtility) {
 //                return new Accept(getPartyId(), lastOffer);
 //            }
@@ -204,13 +319,20 @@ public class Agent30 extends AbstractNegotiationParty {
         return null;
     }
 
+    private double computeNegotiationValue(Bid bid) {
+        //TODO we need to use the elicited model here
+        //utilitySpace.getUtility(bid)
+        double opponentProb = predictOpponentUtility(bid);
+        return opponentProb * utilitySpace.getUtility(bid) + (1 - opponentProb) * utilitySpace.getReservationValue();
+    }
+
     private double computeNashBargainingSolution() {
         double highestNashPoint = MINIMUM_TARGET;
         Bid highestNashBid = null;
         for (Bid bid : bids) {
             double ourOutcome = utilitySpace.getUtility(bid);
             double theirOutcome = predictOpponentUtility(bid);
-            //TODO this is what we play with
+            //TODO this is what we play with - may or may not need to include the reservation value
             double nashPoint = ourOutcome * theirOutcome;
 
             if (nashPoint > highestNashPoint) {
@@ -221,6 +343,11 @@ public class Agent30 extends AbstractNegotiationParty {
 
         return highestNashPoint;
 
+    }
+
+    private void printBid(Bid bid) {
+        System.out.println(bid);
+        System.out.printf("Our util: %f\nTheir util: %f\n", utilitySpace.getUtility(bid), predictOpponentUtility(bid));
     }
 
     private Bid generateRandomBidAboveTarget(double target) {
@@ -236,14 +363,14 @@ public class Agent30 extends AbstractNegotiationParty {
         }
         while (util < target && i++ < 100);
         if (util<target) {
-            System.out.println("Random util was: " + utilitySpace.getUtility(randomBid));
+            //System.out.println("Random util was: " + utilitySpace.getUtility(randomBid));
             double maxUtilInMap = (Collections.max(randomBids.values()));
             for (Map.Entry<Bid, Double> entry : randomBids.entrySet()) {
                 if (entry.getValue() == maxUtilInMap) {
                     randomBid = entry.getKey();
                 }
             }
-            System.out.println("Tried finding the bid with highest util, new util: " + utilitySpace.getUtility(randomBid));
+            //System.out.println("Tried finding the bid with highest util, new util: " + utilitySpace.getUtility(randomBid));
             return randomBid;
         }
         return randomBid;
@@ -294,7 +421,7 @@ public class Agent30 extends AbstractNegotiationParty {
     }
 
     private double computeVo(int issueRank, int issueCount) {
-        return (issueCount - issueRank + 1) / (issueCount);
+        return (issueCount - issueRank + 1.0) / (issueCount);
     }
 
     private double computeUnnormalizedWeightOfIssue(Issue issue) {
@@ -348,6 +475,7 @@ public class Agent30 extends AbstractNegotiationParty {
     @Override
     public void receiveMessage(AgentID sender, Action action) {
         if (action instanceof Offer) {
+            Logger.getLogger("tournamentRun").log(Level.INFO, action.toString() + " -> " + utilitySpace.getUtility(((Offer) action).getBid()));
             lastOffer = ((Offer) action).getBid();
             bidCount++;
             updateOpponentCounts(lastOffer);
@@ -356,7 +484,7 @@ public class Agent30 extends AbstractNegotiationParty {
 
     @Override
     public String getDescription() {
-        return "Practice Submission";
+        return "Group 30 Submission";
     }
 
     /**
@@ -364,7 +492,11 @@ public class Agent30 extends AbstractNegotiationParty {
      */
     @Override
     public AbstractUtilitySpace estimateUtilitySpace() {
-        return super.estimateUtilitySpace();
+        System.out.println("ESTIMATED");
+        AdditiveUtilitySpaceFactory factory = new AdditiveUtilitySpaceFactory(getDomain());
+        BidRanking bidRanking = getUserModel().getBidRanking();
+        factory.estimateUsingBidRanks(bidRanking);
+        return factory.getUtilitySpace();
     }
 
 }
