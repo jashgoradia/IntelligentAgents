@@ -289,10 +289,6 @@ public class Agent30 extends AbstractNegotiationParty {
 
     }
 
-    private double interpolate(double minUtil, double maxUtil, double time) {
-        return (minUtil - maxUtil) * time + maxUtil;
-    }
-
     private Bid getMaxUtilityBid() {
         try {
             return utilitySpace.getMaxUtilityBid();
@@ -300,22 +296,6 @@ public class Agent30 extends AbstractNegotiationParty {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private Bid getMinUtilityBid() {
-        try {
-            return utilitySpace.getMinUtilityBid();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private double computeNegotiationValue(Bid bid) {
-        //TODO we need to use the elicited model here
-        //utilitySpace.getUtility(bid)
-        double opponentProb = predictOpponentUtility(bid);
-        return opponentProb * utilitySpace.getUtility(bid) + (1 - opponentProb) * utilitySpace.getReservationValue();
     }
 
     private double computeNashBargainingSolution() {
