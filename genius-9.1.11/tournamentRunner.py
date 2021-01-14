@@ -43,4 +43,5 @@ for domain in domains:
 	for agent in agents:
 		print("Running our agent against {} on domain {}".format(agent, extractDomainName(domain)))
 		writeFile(genXmlFile(xmlSource, agent, domain), "temp.xml")
+		print("{} temp.xml logs/epicEvaluation{}/run-{}-{}".format(geniusCommand, runName, computeFileName(domain), agent))
 		result = subprocess.run("{} temp.xml logs/epicEvaluation{}/run-{}-{}".format(geniusCommand, runName, computeFileName(domain), agent), shell=True)
